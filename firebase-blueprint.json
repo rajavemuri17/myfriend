@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "User preferences and settings for the companion app",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "preferredLanguage": { "type": "string", "maxLength": 64 },
+        "preferredVoice": { "type": "string", "maxLength": 64 },
+        "ambientSound": { "type": "string", "maxLength": 32 },
+        "ambientVolume": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "email"]
+    },
+    "sessionNote": {
+      "title": "SessionNote",
+      "description": "A mindful companion reflection or journal entry created by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 128 },
+        "content": { "type": "string", "maxLength": 4096 },
+        "mood": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "content"]
+    },
+    "conversationTurn": {
+      "title": "ConversationTurn",
+      "description": "A conversational turn in the voice/text chat history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "sender": { "type": "string", "enum": ["user", "serenade"] },
+        "text": { "type": "string", "maxLength": 2048 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "sender", "text"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User profile and companion preferences"
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": "sessionNote",
+      "description": "User journal entries and mindful reflections"
+    },
+    "/users/{userId}/conversations/{turnId}": {
+      "schema": "conversationTurn",
+      "description": "User conversation turns history"
+    }
+  }
+}

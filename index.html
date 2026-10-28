@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        var originalError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var isWsError = args.some(function(arg) {
+            if (!arg) return false;
+            var str = typeof arg === 'string' ? arg : (arg.message || arg.stack || String(arg));
+            return str.includes('WebSocket closed without opened') || (str.includes('[vite]') && str.includes('WebSocket'));
+          });
+          if (isWsError) return;
+          originalError.apply(console, args);
+        };
+      })();
+      try {
+        let _f = window.fetch;
+        Object.defineProperty(window, 'fetch', {
+          get() { return _f; },
+          set(v) { _f = v; },
+          configurable: true,
+          enumerable: true
+        });
+      } catch (e) {}
+      window.addEventListener('error', function(e) {
+        if (e && (e.message?.includes('WebSocket') || e.filename?.includes('@vite/client'))) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e && e.reason && String(e.reason).includes('WebSocket')) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
+    <title>Serenade - Gentle Voice Companion</title>
+    <meta name="description" content="A warm, supportive, and gentle personal companion with soothing real-time voice conversation powered by Gemini 3.8 Live API." />
+    <meta property="og:title" content="Serenade - Gentle Voice Companion" />
+    <meta property="og:description" content="A warm, supportive, and gentle personal companion with soothing real-time voice conversation powered by Gemini 3.8 Live API." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#090D16" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Serenade" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,109 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for UserProfile
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128)) &&
+             (!('preferredLanguage' in data) || (data.preferredLanguage is string && data.preferredLanguage.size() <= 64)) &&
+             (!('preferredVoice' in data) || (data.preferredVoice is string && data.preferredVoice.size() <= 64)) &&
+             (!('ambientSound' in data) || (data.ambientSound is string && data.ambientSound.size() <= 32)) &&
+             (!('ambientVolume' in data) || (data.ambientVolume is number && data.ambientVolume >= 0 && data.ambientVolume <= 1));
+    }
+
+    // Validation for SessionNote
+    function isValidSessionNote(data) {
+      return data.id is string && isValidId(data.id) &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 4096 &&
+             (!('title' in data) || (data.title is string && data.title.size() <= 128)) &&
+             (!('mood' in data) || (data.mood is string && data.mood.size() <= 64));
+    }
+
+    // Validation for ConversationTurn
+    function isValidConversationTurn(data) {
+      return data.id is string && isValidId(data.id) &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.sender is string && (data.sender == 'user' || data.sender == 'serenade') &&
+             data.text is string && data.text.size() > 0 && data.text.size() <= 2048;
+    }
+
+    // User collection rules
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Blanket user listing forbidden
+
+      allow create: if isOwner(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == request.auth.uid;
+
+      allow update: if isOwner(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId;
+
+      allow delete: if isOwner(userId);
+
+      // Subcollection: Mindful Reflections & Notes
+      match /notes/{noteId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(noteId) &&
+                         isValidSessionNote(incoming()) &&
+                         incoming().userId == request.auth.uid;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(noteId) &&
+                         isValidSessionNote(incoming()) &&
+                         incoming().userId == existing().userId;
+
+        allow delete: if isOwner(userId) && isValidId(noteId);
+      }
+
+      // Subcollection: Conversation History
+      match /conversations/{turnId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(turnId) &&
+                         isValidConversationTurn(incoming()) &&
+                         incoming().userId == request.auth.uid;
+
+        allow update: if isOwner(userId) &&
+                         isValidId(turnId) &&
+                         isValidConversationTurn(incoming()) &&
+                         incoming().userId == existing().userId;
+
+        allow delete: if isOwner(userId) && isValidId(turnId);
+      }
+    }
+  }
+}

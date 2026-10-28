@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#090D16"/>
+    </radialGradient>
+    <radialGradient id="orbGrad" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FED7AA"/>
+      <stop offset="30%" stop-color="#FB923C"/>
+      <stop offset="70%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <!-- Ambient Wave Rings -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#F472B6" stroke-width="2" opacity="0.25"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#FB923C" stroke-width="3" opacity="0.35"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#A78BFA" stroke-width="3" opacity="0.45"/>
+  <!-- Glowing Luminous Orb -->
+  <circle cx="256" cy="256" r="96" fill="url(#orbGrad)" filter="url(#glow)"/>
+  <!-- Specular Sheen -->
+  <circle cx="230" cy="225" r="26" fill="#FFFFFF" opacity="0.6"/>
+  <!-- Sound Wave Accents -->
+  <path d="M 226 310 Q 256 324 286 310" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+</svg>
